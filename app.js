@@ -121,81 +121,16 @@ const LOCATIONS = {
   }
 };
 
-// --- Guided Tour Stops ---
-const GUIDED_TOURS = [
-  {
-    id: 'lobby',
-    stopNumber: 1,
-    name: 'GRAND LOBBY',
-    subtitle: 'Level 2 · Main Atrium',
-    description: 'Begin your journey at the sweeping marble atrium — the heart of Cinnamon Life. Admire the cascading chandelier installation rising six stories above.',
-    emoji: '🏛️',
-    accentColor: '#5D2D91',
-    duration: '~2 min walk'
-  },
-  {
-    id: 'mall',
-    stopNumber: 2,
-    name: 'ATRIUM MALL',
-    subtitle: 'Level 3 · Retail Promenade',
-    description: 'Over 200 luxury boutiques line the grand promenade. From global fashion houses to local artisan galleries — a curated retail experience awaits.',
-    emoji: '🛍️',
-    accentColor: '#8B44C0',
-    duration: '~3 min walk'
-  },
-  {
-    id: 'restaurant',
-    stopNumber: 3,
-    name: 'SIGNATURE DINING',
-    subtitle: 'Level 4 · Fine Dining Terrace',
-    description: 'Savour contemporary Sri Lankan cuisine fused with global influences. Award-winning executive chefs present seasonal tasting menus with panoramic city views.',
-    emoji: '🍽️',
-    accentColor: '#C0444A',
-    duration: '~5 min walk'
-  },
-  {
-    id: 'garden',
-    stopNumber: 4,
-    name: 'SKY GARDEN',
-    subtitle: 'Level 12 · Terraced Promenade',
-    description: 'An elevated tropical oasis with curated botanical gardens, reflection pools, and open-air lounges offering unobstructed views of Colombo's skyline.',
-    emoji: '🌿',
-    accentColor: '#2E8B57',
-    duration: '~7 min walk'
-  },
-  {
-    id: 'pool',
-    stopNumber: 5,
-    name: 'INFINITY POOL',
-    subtitle: 'Level 25 · Sky Deck',
-    description: 'Sri Lanka's highest infinity pool merges seamlessly with the horizon. Relax on sun-loungers as the Indian Ocean stretches before you in every direction.',
-    emoji: '🌊',
-    accentColor: '#1A6FA6',
-    duration: '~10 min walk'
-  },
-  {
-    id: 'lumina',
-    stopNumber: 6,
-    name: 'LUMINA BALLROOM',
-    subtitle: 'Event Wing · Grand Ballroom',
-    description: 'The crown jewel of Cinnamon Life — a 2,000-seat pillarless ballroom draped in cascading crystal. Sri Lanka's most prestigious events venue.',
-    emoji: '✨',
-    accentColor: '#C5A047',
-    duration: '~12 min walk'
-  }
-];
-
 // --- App State ---
 const state = {
   currentDestId: 'lumina',
-  appStateMode: 'dial',         // 'dial' | 'route' | 'tour'
+  appStateMode: 'dial',         // 'dial' (Selection screen) or 'route' (timeline screen)
   orientationMode: 'horizontal', // 'horizontal' (tinted) or 'vertical' (AR translucent)
-  simulatedHeading: 180,
+  simulatedHeading: 180,         // simulated heading slider (0-360)
   cameraActive: false,
   cameraStream: null,
   dialBaseRotation: 0,
-  activeDialAngle: 0,
-  tourStopIndex: 0              // active stop in guided tour
+  activeDialAngle: 0
 };
 
 // --- DOM Elements ---
@@ -228,7 +163,6 @@ const menuBtnRight = document.getElementById('menu-btn-right');
 const dropdownCloseBtn = document.getElementById('dropdown-close-btn');
 const logoHomeTrigger = document.getElementById('logo-home-trigger');
 const confirmSelectBtn = document.getElementById('confirm-select-btn');
-const startTourBtn = document.getElementById('start-tour-btn');
 const backToDialBtn = document.getElementById('back-to-dial-btn');
 
 // Sim Buttons
@@ -277,33 +211,8 @@ function setupEventListeners() {
 
   // Action Buttons
   confirmSelectBtn.addEventListener('click', () => setAppState('route'));
-  startTourBtn.addEventListener('click', () => {
-    state.tourStopIndex = 0;
-    renderTourCard(state.tourStopIndex);
-    setAppState('tour');
-  });
   backToDialBtn.addEventListener('click', () => setAppState('dial'));
   logoHomeTrigger.addEventListener('click', () => setAppState('dial'));
-  document.getElementById('tour-back-btn').addEventListener('click', () => setAppState('dial'));
-
-  // Guided Tour Navigation
-  document.getElementById('tour-prev-btn').addEventListener('click', () => {
-    if (state.tourStopIndex > 0) {
-      state.tourStopIndex--;
-      renderTourCard(state.tourStopIndex);
-    }
-  });
-  document.getElementById('tour-next-btn').addEventListener('click', () => {
-    if (state.tourStopIndex < GUIDED_TOURS.length - 1) {
-      state.tourStopIndex++;
-      renderTourCard(state.tourStopIndex);
-    }
-  });
-  document.getElementById('tour-go-btn').addEventListener('click', () => {
-    const stop = GUIDED_TOURS[state.tourStopIndex];
-    selectDestination(stop.id, true);
-    setAppState('route');
-  });
 
   // Header Dropdown Trigger
   const toggleDropdown = () => dropdownMenu.classList.toggle('active');
@@ -363,66 +272,22 @@ function setupEventListeners() {
 // --- App State Switcher ---
 function setAppState(mode) {
   state.appStateMode = mode;
-
-  // Hide all state containers
-  body.classList.remove('state-dial', 'state-route', 'state-tour');
-
+  
   if (mode === 'dial') {
+    body.classList.remove('state-route');
     body.classList.add('state-dial');
+    
+    // Sync Sim Panel
     simBtnStateDial.classList.add('active');
     simBtnStateRoute.classList.remove('active');
-  } else if (mode === 'route') {
+  } else {
+    body.classList.remove('state-dial');
     body.classList.add('state-route');
+    
+    // Sync Sim Panel
     simBtnStateRoute.classList.add('active');
     simBtnStateDial.classList.remove('active');
-  } else if (mode === 'tour') {
-    body.classList.add('state-tour');
-    simBtnStateDial.classList.remove('active');
-    simBtnStateRoute.classList.remove('active');
   }
-}
-
-// --- Guided Tour Renderer ---
-function renderTourCard(index) {
-  const stop = GUIDED_TOURS[index];
-  const track = document.getElementById('tour-cards-track');
-
-  // Animate out then in
-  track.style.opacity = '0';
-  track.style.transform = 'translateY(12px)';
-
-  setTimeout(() => {
-    track.innerHTML = `
-      <div class="tour-card" style="--tour-accent: ${stop.accentColor}">
-        <div class="tour-card-emoji">${stop.emoji}</div>
-        <div class="tour-card-stop-tag">STOP ${stop.stopNumber} OF ${GUIDED_TOURS.length}</div>
-        <h3 class="tour-card-name">${stop.name}</h3>
-        <p class="tour-card-subtitle">${stop.subtitle}</p>
-        <p class="tour-card-description">${stop.description}</p>
-        <div class="tour-card-meta">
-          <span class="tour-card-duration">🚶 ${stop.duration}</span>
-        </div>
-        <div class="tour-dot-indicators">
-          ${GUIDED_TOURS.map((_, i) => `<div class="tour-dot${i === index ? ' active' : ''}"></div>`).join('')}
-        </div>
-      </div>
-    `;
-
-    track.style.opacity = '1';
-    track.style.transform = 'translateY(0)';
-  }, 160);
-
-  // Update counter
-  document.getElementById('tour-current-stop').textContent = index + 1;
-  document.getElementById('tour-total-stops').textContent = GUIDED_TOURS.length;
-
-  // Update progress bar
-  const pct = ((index + 1) / GUIDED_TOURS.length) * 100;
-  document.getElementById('tour-progress-fill').style.width = `${pct}%`;
-
-  // Update button states
-  document.getElementById('tour-prev-btn').style.opacity = index === 0 ? '0.35' : '1';
-  document.getElementById('tour-next-btn').style.opacity = index === GUIDED_TOURS.length - 1 ? '0.35' : '1';
 }
 
 // --- Destination Selector Logic ---
