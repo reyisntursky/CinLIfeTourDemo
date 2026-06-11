@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cinnamon Hotels & Resorts | Indoor Navigator</title>
+  <!-- Google Fonts: Inter for the clean system aesthetic used in Figma designs -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-cinnamon horizontal-mode state-dial"> <!-- Starts in Dial selection state, Horizontal layout -->
+
+  <!-- Onboarding screen (Fades out after load) -->
+  <div class="onboarding-screen" id="onboarding">
+    <div class="onboarding-logo-container">
+      <svg class="cinnamon-crown-svg" viewBox="0 0 100 80" width="100" height="80" fill="none" stroke="#FFFFFF" stroke-width="2.5">
+        <path d="M 15,65 H 85 V 60 H 80 V 50 H 75 V 45 C 75,30 65,20 50,20 C 35,20 25,30 25,45 V 50 H 20 V 60 H 15 Z" />
+      </svg>
+      <div class="onboarding-logo-text">Cinnamon</div>
+      <div class="onboarding-logo-sub">HOTELS & RESORTS</div>
+    </div>
+  </div>
+
+  <!-- Main AR Camera Background -->
+  <div class="camera-bg-container">
+    <video id="ar-video" autoplay playsinline muted></video>
+    <div class="camera-fallback-bg"></div>
+    <div class="ar-overlay-grid"></div>
+  </div>
+
+  <!-- Core App Canvas -->
+  <div class="app-container">
+    
+    <!-- Figma Header Layout -->
+    <header class="app-header">
+      <!-- Left: Menu Trigger -->
+      <button class="header-action-btn" id="menu-btn-left">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"/>
+        </svg>
+      </button>
+      
+      <!-- Center: Cinnamon Logo Crown -->
+      <div class="header-logo-container" id="logo-home-trigger" title="Return to Dial Screen">
+        <svg class="cinnamon-crown-svg" viewBox="0 0 100 80" width="36" height="29" fill="none" stroke="#FFFFFF" stroke-width="3">
+          <path d="M 15,65 H 85 V 60 H 80 V 50 H 75 V 45 C 75,30 65,20 50,20 C 35,20 25,30 25,45 V 50 H 20 V 60 H 15 Z" />
+        </svg>
+      </div>
+      
+      <!-- Right: Menu Trigger -->
+      <button class="header-action-btn" id="menu-btn-right">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"/>
+        </svg>
+      </button>
+
+      <!-- Dropdown Drop Menu (Figma iPhone 16 - 8 style) -->
+      <div class="dropdown-menu glass-panel" id="dropdown-menu">
+        <button class="dropdown-close-btn" id="dropdown-close-btn">&times;</button>
+        <nav class="dropdown-nav">
+          <a href="#" class="dropdown-link" data-id="lobby">MAIN LOBBY</a>
+          <a href="#" class="dropdown-link" data-id="mall">ATRIUM MALL</a>
+          <a href="#" class="dropdown-link" data-id="casino">CASINO</a>
+          <a href="#" class="dropdown-link" data-id="restaurant">RESTAURANTS</a>
+          <a href="#" class="dropdown-link" data-id="suites">POOL ACCESS</a>
+          <a href="#" class="dropdown-link" data-id="lumina">LUMINA BALLROOM</a>
+          <a href="#" class="dropdown-link dropdown-emergency">EMERGENCY EXITS</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- STATE A: DIAL SELECTION SCREEN (Figma iPhone 16 - 7 style) -->
+    <main class="state-container" id="dial-selection-view">
+      <div class="dial-header-panel">
+        <h2>SELECT DESTINATION</h2>
+        <p>Rotate the wheel to select a point of interest</p>
+      </div>
+
+      <div class="dial-wheel-center-layout">
+        <!-- Concentric Ring Dial Container -->
+        <div class="figma-dial-outer">
+          <!-- Multi-ring wireframe background (from Figma components) -->
+          <div class="dial-wireframe-rings">
+            <div class="ring ring-1"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-3"></div>
+            <div class="ring ring-4"></div>
+          </div>
+          
+          <div class="figma-dial-wheel" id="main-dial-wheel">
+            <!-- Central core button -->
+            <div class="figma-dial-core">
+              <div class="core-logo-badge">
+                <svg viewBox="0 0 100 80" width="20" height="16" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5">
+                  <path d="M 15,65 H 85 V 60 H 80 V 50 H 75 V 45 C 75,30 65,20 50,20 C 35,20 25,30 25,45 V 50 H 20 V 60 H 15 Z" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- 8 Bubbles placed uniformly in a circle (45 degree offsets) -->
+            <div class="dial-bubble-item" data-id="lobby" style="--angle: 0deg;">
+              <div class="bubble-btn"><span class="lbl">Lobby</span></div>
+            </div>
+            <div class="dial-bubble-item" data-id="mall" style="--angle: 45deg;">
+              <div class="bubble-btn"><span class="lbl">Mall</span></div>
+            </div>
+            <div class="dial-bubble-item" data-id="casino" style="--angle: 90deg;">
+              <div class="bubble-btn"><span class="lbl">Casino</span></div>
+            </div>
+            <div class="dial-bubble-item" data-id="restaurant" style="--angle: 135deg;">
+              <div class="bubble-btn"><span class="lbl">Dining</span></div>
+            </div>
+            <div class="dial-bubble-item" data-id="suites" style="--angle: 180deg;">
+              <div class="bubble-btn"><span class="lbl">Suites</span></div>
+            </div>
+            <div class="dial-bubble-item" data-id="lumina" style="--angle: 225deg;">
+              <div class="bubble-btn active"><span class="lbl">Lumina</span></div>
+            </div>
+            <div class="dial-bubble-item" data-id="pool" style="--angle: 270deg;">
+              <div class="bubble-btn"><span class="lbl">Pool</span></div>
+            </div>
+            <div class="dial-bubble-item" data-id="garden" style="--angle: 315deg;">
+              <div class="bubble-btn"><span class="lbl">Garden</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="dial-selection-footer">
+        <button class="action-select-btn" id="confirm-select-btn">START DIRECTIONS</button>
+      </div>
+    </main>
+
+    <!-- STATE B: ROUTE DIRECTIONS SCREEN (Figma iPhone 16 - 11/12 Split Screen layout) -->
+    <main class="state-container" id="route-directions-view">
+      <div class="figma-split-layout">
+        
+        <!-- Left Column: Purple strip with navigation arrows -->
+        <div class="split-left-panel">
+          <div class="arrow-container">
+            <div class="nav-arrow main-arrow" id="main-nav-arrow">↑</div>
+            <div class="nav-arrow sub-arrow">→</div>
+            <div class="nav-arrow sub-arrow">→</div>
+          </div>
+          <button class="back-to-dial-btn" id="back-to-dial-btn">
+            <span>← DIAL</span>
+          </button>
+        </div>
+        
+        <!-- Right Column: Massive circular card container with scrollable timeline steps -->
+        <div class="split-right-panel">
+          <div class="figma-route-circle" id="route-steps-circle">
+            
+            <!-- Route Header -->
+            <div class="route-circle-header">
+              <span class="route-subtitle">YOU'RE ON YOUR WAY TO</span>
+              <h2 class="route-title" id="route-destination-name">LUMINA</h2>
+              <span class="route-building-tag">BALLROOM</span>
+            </div>
+            
+            <!-- Timeline steps list -->
+            <div class="route-timeline-container">
+              <div class="timeline-line"></div>
+              <ul class="timeline-steps" id="route-timeline-steps">
+                <!-- Populated dynamically via JS to match Figma timeline -->
+                <li class="timeline-item active">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-content">
+                    <span class="timeline-label">Checkpoint</span>
+                    <h4 class="timeline-title">ENTRANCE</h4>
+                  </div>
+                </li>
+                <li class="timeline-item">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-content">
+                    <h4 class="timeline-title">L2 LOBBY</h4>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Embedded dynamic floor map path inside the circle (Visible in Horizontal mode) -->
+            <div class="circle-floor-map" id="circle-floor-map">
+              <svg viewBox="0 0 200 120" width="100%" height="100%">
+                <path d="M 20,60 H 180" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="4 2" fill="none"/>
+                <path id="circle-path-line" d="M 30,60 L 90,60 L 90,30 L 160,30" stroke="#5D2D91" stroke-width="4" fill="none"/>
+                <circle id="circle-path-dot" cx="30" cy="60" r="5" fill="#5D2D91"/>
+                <circle cx="160" cy="30" r="5" fill="#fff" stroke="#5D2D91" stroke-width="2"/>
+              </svg>
+            </div>
+            
+            <!-- Decorative concentric ring watermark in bottom right -->
+            <div class="decorative-watermark-dial">
+              <div class="ring w-ring-1"></div>
+              <div class="ring w-ring-2"></div>
+              <div class="ring w-ring-3"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- STATE C: AR HUD View Overlay (Visible in Vertical Mode overlaying Camera) -->
+    <div class="ar-hud-overlay" id="ar-hud">
+      <!-- Top Compass ticks -->
+      <div class="hud-compass">
+        <div class="hud-ticks" id="hud-ticks">
+          <span>N</span><span>·</span><span>E</span><span>·</span><span>S</span><span>·</span><span>W</span><span>·</span>
+        </div>
+        <div class="hud-center-marker"></div>
+      </div>
+      
+      <!-- Central scan target Reticle -->
+      <div class="hud-crosshair">
+        <div class="hud-scanner-line"></div>
+      </div>
+      
+      <!-- Floating AR Waypoint Bubble (Moves with simulated device rotation) -->
+      <div class="ar-waypoint" id="ar-waypoint">
+        <div class="waypoint-pin">
+          <div class="waypoint-pulse"></div>
+          <div class="waypoint-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+              <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="waypoint-card glass-panel">
+          <span class="waypoint-tag">AR ROUTE POINT</span>
+          <h4 id="waypoint-title">LUMINA</h4>
+          <p id="waypoint-distance">120m • 2 mins</p>
+          <div class="waypoint-arrow"></div>
+        </div>
+      </div>
+
+      <!-- Edge Hints for Waypoint Navigation -->
+      <div class="hud-edge-hint left" id="hud-hint-left">
+        <div class="hint-arrow">←</div>
+        <div class="hint-text" id="hud-hint-text-left">Lumina 45m</div>
+      </div>
+      <div class="hud-edge-hint right" id="hud-hint-right">
+        <div class="hint-text" id="hud-hint-text-right">Lumina 45m</div>
+        <div class="hint-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- Preview & Orientation Simulator Panel (Matches bottom/side launcher widget) -->
+    <div class="sim-panel glass-panel" id="sim-panel">
+      <div class="sim-header">
+        <h4>FIGMA DESIGN PREVIEWER</h4>
+        <button class="sim-toggle-btn" id="sim-toggle-btn">×</button>
+      </div>
+      <div class="sim-body" id="sim-body">
+        
+        <!-- Screen State Switcher -->
+        <div class="sim-group">
+          <label>APP STATE</label>
+          <div class="toggle-switch-wrapper">
+            <button class="toggle-btn active" id="sim-btn-state-dial">Dial Selector</button>
+            <button class="toggle-btn" id="sim-btn-state-route">Route Steps</button>
+          </div>
+        </div>
+
+        <!-- Phone Orientation Switcher -->
+        <div class="sim-group">
+          <label>PHONE ORIENTATION (TILT)</label>
+          <div class="toggle-switch-wrapper">
+            <button class="toggle-btn active" id="sim-btn-horiz">Horizontal (Flat/Tinted)</button>
+            <button class="toggle-btn" id="sim-btn-vert">Vertical (AR/Translucent)</button>
+          </div>
+        </div>
+        
+        <!-- Target Location Selector -->
+        <div class="sim-group">
+          <label for="sim-dest-select">DESTINATION</label>
+          <select id="sim-dest-select">
+            <option value="lobby">Main Lobby (L2)</option>
+            <option value="mall">Atrium Mall (L3)</option>
+            <option value="casino">Casino (L3)</option>
+            <option value="restaurant">Fine Dining (L4)</option>
+            <option value="suites">Luxury Suites (L8)</option>
+            <option value="lumina" selected>Lumina Ballroom</option>
+            <option value="pool">Rooftop Pool</option>
+            <option value="garden">Sky Garden</option>
+          </select>
+        </div>
+
+        <!-- Compass Slider for AR orientation testing -->
+        <div class="sim-group" id="sim-heading-group">
+          <div class="sim-label-row">
+            <label for="sim-heading-slider">SIMULATED GYROSCOPE</label>
+            <span id="heading-val">180°</span>
+          </div>
+          <input type="range" id="sim-heading-slider" min="0" max="360" value="180">
+          <small class="sim-help">Drag to turn camera and find AR Waypoint</small>
+        </div>
+
+        <!-- WebRTC Live Camera Status -->
+        <div class="sim-group">
+          <label>AR CAMERA CONTROL</label>
+          <div class="cam-status-row">
+            <span class="status-badge error" id="cam-badge">OFF</span>
+            <button class="cam-action-btn" id="cam-toggle-action">ACTIVATE CAMERA</button>
+          </div>
+        </div>
+        
+        <div class="sim-info">
+          <p>🎯 <strong>Horizontal Mode:</strong> Flat view displays layout structures.</p>
+          <p>🎯 <strong>Vertical Mode:</strong> Tilted view opens camera and renders components with translucency.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Floating button to launch Simulator -->
+    <button class="sim-launcher-btn glass-panel" id="sim-launcher-btn">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.47,5.34 14.86,5.08L14.47,2.42C14.43,2.18 14.22,2 13.97,2H9.97C9.72,2 9.51,2.18 9.47,2.42L9.09,5.08C8.47,5.34 7.9,5.66 7.38,6.05L4.89,5.05C4.67,4.96 4.4,5.05 4.28,5.27L2.28,8.73C2.16,8.95 2.21,9.22 2.4,9.37L4.51,11C4.47,11.34 4.44,11.67 4.44,12C4.44,12.33 4.47,12.65 4.51,12.97L2.4,14.63C2.21,14.78 2.16,15.05 2.28,15.27L4.28,18.73C4.4,18.95 4.67,19.04 4.89,18.95L7.38,17.95C7.9,18.34 8.47,18.66 9.09,18.92L9.47,21.58C9.51,21.82 9.72,22 9.97,22H13.97C14.22,22 14.43,21.82 14.47,21.58L14.86,18.92C15.47,18.66 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+      </svg>
+      <span>PREVIEW CONTROLS</span>
+    </button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
